@@ -1,0 +1,59 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKERHUB_CREDENTIALS = 'dockerhub-credentials' // Replace with your Jenkins credential ID
+    DOCKERHUB_REPO = 'yourdockerhubuser/flask-mysql-demo' // Replace with your Docker Hub repo
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Image') {
+      steps {
+        script {
+          // Build Docker image and tag with build number
+          IMAGE = docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}")
+        }
+      }
+    }
+
+    stage('Run Tests') {
+      steps {
+        script {
+          // Run pytest inside the built image
+          IMAGE.inside('-e DB_HOST=db -e DB_USER=exampleuser -e DB_PASSWORD=examplepass -e DB_NAME=exampledb') {
+            sh 'pytest -q'
+          }
+        }
+      }
+    }
+
+    stage('Push to Docker Hub') {
+      steps {
+        script {
+          docker.withRegistry('https://registry.hub.docker.com', DOCKERHUB_CREDENTIALS) {
+            IMAGE.push()
+            IMAGE.push('latest')
+          }
+        }
+      }
+    }
+
+    stage('Optional Deploy') {
+      steps {
+        echo 'Add deploy steps here (e.g., SSH to server and run docker run)'
+      }
+    }
+  }
+
+  post {
+    always {
+      cleanWs()
+    }
+  }
+}
