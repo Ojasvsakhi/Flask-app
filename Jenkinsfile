@@ -14,13 +14,13 @@ pipeline {
     }
 
     stage('Build Image') {
-      steps {
-        script {
-          // Build Docker image and tag with build number
-          IMAGE = docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}")
-        }
-      }
+  steps {
+    script {
+      IMAGE = docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}", "-f web/Dockerfile .")
     }
+  }
+}
+
 
     stage('Run Tests') {
       steps {
