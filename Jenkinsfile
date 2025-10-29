@@ -16,7 +16,7 @@ pipeline {
     stage('Build Image') {
   steps {
     script {
-      IMAGE = docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}", "-f web/Dockerfile .")
+      IMAGE = docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}", "-f web/Dockerfile web")
     }
   }
 }
