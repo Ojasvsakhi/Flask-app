@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     DOCKERHUB_CREDENTIALS = 'dockerhub-credentials' // Replace with your Jenkins credential ID
-    DOCKERHUB_REPO = 'yourdockerhubuser/flask-mysql-demo' // Replace with your Docker Hub repo
+    DOCKERHUB_REPO = 'mricognito/flask-app' // Replace with your Docker Hub repo
   }
 
   stages {
