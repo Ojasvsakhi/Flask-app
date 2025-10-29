@@ -23,15 +23,15 @@ pipeline {
 
 
     stage('Run Tests') {
-      steps {
-        script {
-          // Run pytest inside the built image
-          IMAGE.inside('-e DB_HOST=db -e DB_USER=exampleuser -e DB_PASSWORD=examplepass -e DB_NAME=exampledb') {
-            sh 'pytest -q'
-          }
-        }
+  steps {
+    script {
+      IMAGE.inside('-v $WORKSPACE/tests:/app/tests -e DB_HOST=db -e DB_USER=exampleuser -e DB_PASSWORD=examplepass -e DB_NAME=exampledb') {
+        sh 'pytest -q /app/tests'
       }
     }
+  }
+}
+
 
     stage('Push to Docker Hub') {
       steps {
