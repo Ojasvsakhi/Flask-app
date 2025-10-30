@@ -21,9 +21,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends ^
-    build-essential ^
-    default-libmysqlclient-dev ^
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    default-libmysqlclient-dev \
   && rm -rf /var/lib/apt/lists/*
 
 COPY web/requirements.txt .
@@ -53,8 +53,7 @@ CMD ["gunicorn", "-b", "0.0.0.0:5000", "web.app:app"]
             -e DB_USER=exampleuser ^
             -e DB_PASSWORD=examplepass ^
             -e DB_NAME=exampledb ^
-            ${imageTag} ^
-            cmd /c "cd /app && pytest -v tests"
+            ${imageTag} sh -c "cd /app && pytest -v tests/"
           """
         }
       }
