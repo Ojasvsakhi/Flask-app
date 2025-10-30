@@ -14,23 +14,48 @@ pipeline {
     }
 
     stage('Build Image') {
-  steps {
-    script {
-      IMAGE = docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}", "-f web/Dockerfile web")
-    }
-  }
-}
+      steps {
+        script {
+          // Create a temporary Dockerfile that copies everything needed
+          writeFile file: 'Dockerfile.ci', text: '''
+FROM python:3.11-slim
 
+WORKDIR /app
 
-    stage('Run Tests') {
-  steps {
-    script {
-      IMAGE.inside('-v $WORKSPACE/tests:/app/tests -e DB_HOST=db -e DB_USER=exampleuser -e DB_PASSWORD=examplepass -e DB_NAME=exampledb') {
-        sh 'pytest -q /app/tests'
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    build-essential \\
+    default-libmysqlclient-dev \\
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install
+COPY web/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application and tests
+COPY web /app/web
+COPY tests /app/tests
+
+# Add web module to Python path
+ENV PYTHONPATH=/app
+
+EXPOSE 5000
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "web.app:app"]
+'''
+          IMAGE = docker.build("${DOCKERHUB_REPO}:${env.BUILD_NUMBER}", "-f Dockerfile.ci .")
+        }
       }
     }
-  }
-}
+
+    stage('Run Tests') {
+      steps {
+        script {
+          IMAGE.inside('-e DB_HOST=db -e DB_USER=exampleuser -e DB_PASSWORD=examplepass -e DB_NAME=exampledb') {
+            sh 'cd /app && pytest -v tests/'
+          }
+        }
+      }
+    }
 
 
     stage('Push to Docker Hub') {
