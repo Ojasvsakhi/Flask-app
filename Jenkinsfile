@@ -50,9 +50,16 @@ CMD ["gunicorn", "-b", "0.0.0.0:5000", "web.app:app"]
     stage('Run Tests') {
       steps {
         script {
-          IMAGE.inside('-e DB_HOST=db -e DB_USER=exampleuser -e DB_PASSWORD=examplepass -e DB_NAME=exampledb') {
-            sh 'cd /app && pytest -v tests/'
-          }
+          sh """
+docker run --rm \
+  -e DB_HOST=db \
+  -e DB_USER=exampleuser \
+  -e DB_PASSWORD=examplepass \
+  -e DB_NAME=exampledb \
+  ${DOCKERHUB_REPO}:${env.BUILD_NUMBER} \
+  sh -c "cd /app && pytest -v tests/"
+"""
+
         }
       }
     }
