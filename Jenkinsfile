@@ -72,9 +72,9 @@ CMD ["gunicorn", "-b", "0.0.0.0:5000", "web.app:app"]
       }
     }
 
-    stage('Optional Deploy') {
+    stage('Deploy') {
       steps {
-        echo 'Add deploy steps here (e.g., docker run on remote host)'
+        echo 'Deployment Steps'
       }
     }
   }
