@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, render_template, jsonify, redirect, url_for
 
 app = Flask(__name__)
 
@@ -26,6 +26,20 @@ def try_db_connect():
 
 @app.route('/')
 def index():
+    ok, info = try_db_connect()
+    return render_template('index.html',
+        db_ok=ok,
+        db_info=info,
+        db_host=os.environ.get('DB_HOST', 'db'),
+        db_name=os.environ.get('DB_NAME', 'exampledb')
+    )
+
+@app.route('/refresh')
+def refresh():
+    return redirect(url_for('index'))
+
+@app.route('/api/status')
+def api_status():
     ok, info = try_db_connect()
     return jsonify({
         'message': 'Hello from Flask in Docker!',
